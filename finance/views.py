@@ -28,6 +28,7 @@ from django.contrib.auth import login
 from .forms import RegisterForm, TransactionForm, GoalForm
 from django.contrib.auth.decorators import login_required
 from .models import Transaction, Goal 
+from django.db.models import Sum 
 
 def RegisterView(request):
     if request.method == "POST":
@@ -42,7 +43,36 @@ def RegisterView(request):
 
 @login_required
 def DashboardView(request):
-    return render(request, 'finance/dashboard.html')
+    transactions = Transaction.objects.filter(user = request.user)
+    goals = Goal.objects.filter(user = request.user)
+    
+    # Calculate total income and expenses
+    total_expense = Transaction.objects.filter(user = request.user, transaction_type='Expense').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_income = Transaction.objects.filter(user = request.user, transaction_type='Income').aggregate(Sum('amount'))['amount__sum'] or 0
+
+    net_savings = total_income - total_expense
+    remaining_savnigs = net_savings
+    goal_progress = []
+    for goal in goals:
+        if remaining_savnigs >= goal.target_amount:
+            goal_progress.append({'goal': goal, 'progress': 100})
+            remaining_savnigs -= goal.target_amount
+        elif remaining_savnigs > 0:
+            progress = (remaining_savnigs / goal.target_amount) * 100
+            goal_progress.append({'goal': goal, 'progress': progress})
+            remaining_savnigs = 0
+        else:
+            goal_progress.append({'goal': goal, 'progress': 0})
+
+    context = {
+        'transactions': transactions,
+        'total_income': total_income,
+        'total_expense': total_expense,
+        'net_savings' : net_savings,
+        'goal_progress': goal_progress,
+    }
+
+    return render(request, 'finance/dashboard.html', context)
 
 
 @login_required
