@@ -28,21 +28,21 @@
             <h2 class="text-2xl font-semibold text-gray-800 mb-4">Your Goals</h2>
             <ul class="space-y-4">
                 {% for item in goal_progress %}
-                    <li class="flex justify_between items-center">
+                    <li class="flex justify-between items-center">
                         <div class="text-gray-800">
                             <p class="font-semibold">{{item.goal.name}}</p>
                             <p class="text-sm text-gray-600">Target: ${{item.goal.target_amount|floatformat:2}}</p>
                             <p class="text-sm text-gray-600">Deadline: {{item.goal.deadline}}</p>
                         </div>
                         <div calss="text-right">
-                            <p class="text-xl font-bold text-indigo-500">{{item.progress|floatformat:2}}%</p>
+                            <p class="text-xl font-bold {% if item.progress == 100 %}text-green-500{% elif item.progress >= 80 %}text-yellow-500{% else %}text-indigo-500{% endif %}">{{item.progress|floatformat:2}}%</p>
                         </div>
                     </li>
                 {% endfor %}
             </ul>
         </div>
         <div class="text-center">
-            <a href="{% url "goal_add" %}" class="bg-indigo-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-indigo-600 transition">Add New Goal</a>
+            <a href="{% url "goal_add" %}" class="bg-indigo-500 text-white px-8 py-3 rounded-lg shadow-md hover:bg-indigo-600 transition">Add New Goal</a>
         </div>
     </div>
 {% endblock content %}
