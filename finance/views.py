@@ -1,7 +1,3 @@
-from django.shortcuts import render, redirect
-from finance.forms import RegisterForm, TransactionForm
-from django.contrib.auth import login
-from django.views import View
 
 
 # class RegisterView(View):
@@ -23,12 +19,16 @@ from django.views import View
 #     def get(self, request, *args, **kwargs):
 #         return render(request, 'finance/transaction_form.html')
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import login
 from .forms import RegisterForm, TransactionForm, GoalForm
 from django.contrib.auth.decorators import login_required
-from .models import Transaction, Goal 
+from .models import Transaction, Goal
 from django.db.models import Sum 
+from django.views import View
+from .admin import TransactionResource
+from django.contrib import messages
+
 
 def RegisterView(request):
     if request.method == "POST":
@@ -36,6 +36,7 @@ def RegisterView(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+            messages.success(request, 'Account created successfully!')
             return redirect('dashboard') 
     else:
         form = RegisterForm()
@@ -83,6 +84,7 @@ def TransactionCreateView(request):
             transaction = form.save(commit=False)
             transaction.user = request.user
             transaction.save()
+            messages.success(request, 'Transaction added successfully!')
             return redirect('dashboard') 
     else:
         form = TransactionForm()
@@ -90,7 +92,7 @@ def TransactionCreateView(request):
 
 @login_required
 def TransactionListView(request):
-    transactions = Transaction.objects.all()
+    transactions = Transaction.objects.filter(user = request.user)
     return render(request, 'finance/transaction_list.html', {'transactions': transactions})
 
 
@@ -102,9 +104,22 @@ def GoalCreateView(request):
             goal = form.save(commit=False)
             goal.user = request.user
             goal.save()
+            messages.success(request, 'Goal created successfully!')
             return redirect('dashboard')
         return render(request, 'finance/goal_form.html', {'form': form})
          
     else:
         form = GoalForm()
         return render(request, 'finance/goal_form.html', {'form': form})
+
+def export_transaction(request):
+    user_transaction = Transaction.objects.filter(user = request.user)
+    transaction_resource = TransactionResource()
+    dataset = transaction_resource.export(queryset=user_transaction)
+    excel_data = dataset.export('xlsx')
+    # create an HttpResponse with the correct MIME type for an Excel file
+    response = HttpResponse(excel_data, content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+    # set the header for downloading the file 
+    response['Content-Disposition'] = 'attachment; filename = transactions_report.xlsx'
+    return response

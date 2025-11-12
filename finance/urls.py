@@ -6,4 +6,5 @@ urlpatterns = [
     path('transaction/add/', views.TransactionCreateView, name='transaction_add'),
     path('transactions/', views.TransactionListView, name='transaction_list'),
     path('goal/add/', views.GoalCreateView, name='goal_add'),
+    path('generate-report/', views.export_transaction, name='export_transaction'),
 ]

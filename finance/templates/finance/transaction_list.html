@@ -1,6 +1,9 @@
 {% extends "finance/base.html" %}
 {% block title %}Transactions{% endblock title %}
 {% block content %}
+    <a href=" {% url "export_transaction" %}" class="ml-4 my-4 inline-block px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-200">
+        Generate Report
+    </a>
     <h1 class="text-xl font-bold my-4">Transaction List</h1>
     <table class="min-w-full table-atuo border-collapse border border-gray-300">
         <thead>
