@@ -25,9 +25,9 @@ from django.views import View
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
-from .forms import RegisterForm 
+from .forms import RegisterForm, TransactionForm, GoalForm
 from django.contrib.auth.decorators import login_required
-from .models import Transaction
+from .models import Transaction, Goal 
 
 def RegisterView(request):
     if request.method == "POST":
@@ -64,3 +64,17 @@ def TransactionListView(request):
     return render(request, 'finance/transaction_list.html', {'transactions': transactions})
 
 
+@login_required
+def GoalCreateView(request):
+    if request.method == "POST":
+        form = GoalForm(request.POST)
+        if form.is_valid():
+            goal = form.save(commit=False)
+            goal.user = request.user
+            goal.save()
+            return redirect('dashboard')
+        return render(request, 'finance/goal_form.html', {'form': form})
+         
+    else:
+        form = GoalForm()
+        return render(request, 'finance/goal_form.html', {'form': form})
