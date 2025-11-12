@@ -27,6 +27,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import RegisterForm 
 from django.contrib.auth.decorators import login_required
+from .models import Transaction
 
 def RegisterView(request):
     if request.method == "POST":
@@ -57,6 +58,9 @@ def TransactionCreateView(request):
         form = TransactionForm()
         return render(request, 'finance/transaction_form.html', {'form': form})
 
+@login_required
+def TransactionListView(request):
+    transactions = Transaction.objects.all()
+    return render(request, 'finance/transaction_list.html', {'transactions': transactions})
 
-    
 
